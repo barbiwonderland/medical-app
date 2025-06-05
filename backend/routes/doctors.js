@@ -11,8 +11,23 @@ router.post("/", async (req, res) => {
       [first_name, last_name, specialization]
     );
     res.status(201).json(result.rows[0]);
+    console.error(`Doctor ${first_name} creado correctamente`);
   } catch (err) {
     console.error("Error creando doctor:", err);
+    res.status(500).json({ error: "Error interno del servidor" });
+  }
+});
+
+
+// get all doctors
+router.get("/", async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT * FROM Doctor ORDER BY last_name, first_name`
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error consultando doctores:", error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 });

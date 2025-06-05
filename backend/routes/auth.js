@@ -1,28 +1,22 @@
-const express = require("express");
-const router = express.Router();
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
-const { pool } = require("../db");
+// query para login
+const result = await db.query('SELECT * FROM Users WHERE email = $1', [email]);
 
-const JWT_SECRET = process.env.JWT_SECRET;
+if (result.rows.length === 0) {
+  return res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
+}
 
-router.post("/", async (req, res) => {
-  const { email, password } = req.body;
+const user = result.rows[0];
+const passwordMatch = await bcrypt.compare(password, user.password_hash);
 
-  try {
-    const result = await pool.query('SELECT * FROM Doctor WHERE email = $1', [email]);
-    if (result.rows.length === 0) return res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
+if (!passwordMatch) {
+  return res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
+}
 
-    const doctor = result.rows[0];
-    const match = await bcrypt.compare(password, doctor.password_hash);
-    if (!match) return res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
+// crear token con rol incluido
+const token = jwt.sign(
+  { userId: user.id, email: user.email, role: user.role },
+  JWT_SECRET,
+  { expiresIn: '8h' }
+);
 
-    const token = jwt.sign({ doctor_id: doctor.doctor_id, email: doctor.email }, JWT_SECRET, { expiresIn: '2h' });
-    res.json({ token });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Error interno del servidor' });
-  }
-});
-
-module.exports = router;
+res.json({ token });

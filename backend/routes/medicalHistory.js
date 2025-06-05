@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../db");
-const authMiddleware = require("../middleware/authMiddleware");
+const AuthMiddleware = require("../middleware/ authMiddleware");
+
 
 // create medical history
 router.post("/", async (req, res) => {
@@ -21,7 +22,7 @@ router.post("/", async (req, res) => {
 });
 
 // get medical history use authmiddleware to verify doctor header
-router.get("/:patientId", authMiddleware, async (req, res) => {
+router.get("/:patientId", AuthMiddleware, async (req, res) => {
   const { doctorId } = req;
   const patientId = parseInt(req.params.patientId);
 

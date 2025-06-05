@@ -1,11 +1,10 @@
-// Middleware simple con x-doctor-id desde headers
-
-module.exports = (req, res, next) => {
-    const doctorId = req.header("x-doctor-id");
-    if (!doctorId) {
-      return res.status(401).json({ error: "Doctor no autenticado" });
-    }
-    req.doctorId = parseInt(doctorId);
-    next();
-  };
+function authRole(roles) {
+    return (req, res, next) => {
+      const { role } = req.user;
+      if (!roles.includes(role)) {
+        return res.status(403).json({ message: "Acceso no autorizado" });
+      }
+      next();
+    };
+  }
   
